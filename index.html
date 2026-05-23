@@ -34,7 +34,7 @@
 
   /* LAYOUT */
   #mainPanel{display:none;min-height:100vh;}
-  .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;}
+  .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;overflow-y:auto;}
   .sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem;padding-left:4px;}
   .sb-logo .lm{width:34px;height:34px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:12px;color:#fff;}
   .sb-logo span{font-size:15px;font-weight:700;}
@@ -43,10 +43,11 @@
   .nav-item:hover{background:var(--bg3);color:var(--text);}
   .nav-item.active{background:var(--accent-glow);color:var(--accent2);border:0.5px solid rgba(108,99,255,.25);}
   .nav-item svg{width:16px;height:16px;flex-shrink:0;}
-  .sb-bottom{margin-top:auto;}
+  .sb-bottom{margin-top:auto;padding-top:1rem;}
   .user-chip{display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:8px;border:0.5px solid var(--border);}
   .u-av{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
   .u-av.admin{background:#6c63ff;}
+  .u-av.reseller{background:#d97706;}
   .u-av.user{background:#0e7a5a;}
   .u-info{flex:1;min-width:0;}
   .u-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -69,6 +70,14 @@
   .stat-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
   .stat-value{font-size:26px;font-weight:700;font-family:var(--mono);color:var(--accent2);}
   .stat-desc{font-size:11px;color:var(--text2);margin-top:4px;}
+
+  /* QUOTA BARS */
+  .quota-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:1rem;}
+  .quota-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:10px;padding:1rem;}
+  .quota-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+  .quota-bar-wrap{background:var(--bg);border-radius:4px;height:6px;margin:8px 0;}
+  .quota-bar{height:6px;border-radius:4px;background:var(--accent);transition:width .4s;}
+  .quota-nums{font-size:11px;font-family:var(--mono);color:var(--text2);}
 
   /* FORM */
   .f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
@@ -95,7 +104,7 @@
   .cpbtn:hover{background:var(--bg2);color:var(--accent2);}
   .cpbtn.ok{color:var(--success);border-color:var(--success);}
 
-  /* MY KEY BOX (usuario) */
+  /* MY KEY BOX */
   .my-key-box{background:var(--bg3);border:0.5px solid var(--accent);border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1rem;}
   .my-key-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent2);letter-spacing:.05em;margin:1rem 0;}
   .my-key-meta{font-size:11px;color:var(--text2);font-family:var(--mono);}
@@ -118,6 +127,7 @@
   .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;font-family:var(--mono);color:var(--text2);font-size:13px;flex-direction:column;gap:12px;}
   .tag-badge{font-size:10px;padding:2px 10px;border-radius:20px;font-family:var(--mono);}
   .tag-admin{background:rgba(108,99,255,.2);color:var(--accent2);}
+  .tag-reseller{background:rgba(217,119,6,.2);color:#fbbf24;}
   .tag-user{background:rgba(34,211,160,.15);color:var(--success);}
 </style>
 </head>
@@ -180,6 +190,17 @@
       Stock total
     </button>
 
+    <!-- RESELLER ONLY -->
+    <div class="nav-sec reseller-only">Revendedor</div>
+    <button class="nav-item reseller-only" onclick="showPage('resellerKeys',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      Mi stock
+    </button>
+    <button class="nav-item reseller-only" onclick="showPage('resellerUsers',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Mis clientes
+    </button>
+
     <!-- USER ONLY -->
     <div class="nav-sec user-only">Mis keys</div>
     <button class="nav-item user-only" onclick="showPage('getKey',this)">
@@ -207,20 +228,41 @@
     <div class="page active" id="page-home">
       <div class="page-title">Bienvenido</div>
       <div class="page-sub" id="homeSubtitle">Panel ExternalHax</div>
+
+      <!-- Admin stats -->
       <div class="stats-grid" id="adminStats">
         <div class="stat-card"><div class="stat-label">Stock total</div><div class="stat-value" id="stTotal">—</div><div class="stat-desc">Keys disponibles</div></div>
         <div class="stat-card"><div class="stat-label">ULTIMATE (Lvl 2)</div><div class="stat-value" id="stLv2" style="color:var(--accent2)">—</div><div class="stat-desc">En stock</div></div>
         <div class="stat-card"><div class="stat-label">BYPASS2 (Lvl 3)</div><div class="stat-value" id="stLv3" style="color:var(--success)">—</div><div class="stat-desc">En stock</div></div>
         <div class="stat-card"><div class="stat-label">Usuarios</div><div class="stat-value" id="stUsers" style="color:var(--text2)">—</div><div class="stat-desc">Registrados</div></div>
       </div>
+
+      <!-- Reseller home -->
+      <div id="resellerHomeMsg" style="display:none;">
+        <div class="fc">
+          <h3>Tu cuota de keys</h3>
+          <p style="font-size:12px;color:var(--text2);font-family:var(--mono);margin-bottom:1rem;">Límite: 100 keys por nivel. El admin te carga las keys.</p>
+          <div class="quota-grid" id="resellerQuotaHome"></div>
+        </div>
+        <div class="fc">
+          <h3>¿Cómo funciona?</h3>
+          <p style="font-size:13px;color:var(--text2);font-family:var(--mono);line-height:1.8;">
+            1. El admin te carga keys a tu stock<br>
+            2. Ve a <strong style="color:var(--accent2)">Mis clientes</strong> y crea las cuentas de tus clientes<br>
+            3. El cliente entra al panel con su usuario y contraseña<br>
+            4. El cliente elige nivel y duración y obtiene su key
+          </p>
+        </div>
+      </div>
+
       <!-- User home -->
       <div id="userHomeMsg" style="display:none;">
         <div class="fc">
           <h3>¿Cómo obtener tu key?</h3>
           <p style="font-size:13px;color:var(--text2);font-family:var(--mono);line-height:1.8;">
             1. Ve a <strong style="color:var(--accent2)">Obtener key</strong> en el menú<br>
-            2. Elige el nivel y haz clic en <strong style="color:var(--accent2)">Obtener key</strong><br>
-            3. Tu key aparecerá automáticamente<br>
+            2. Elige el nivel y la duración<br>
+            3. Haz clic en <strong style="color:var(--accent2)">Obtener key</strong><br>
             4. Cópiala y úsala en ExternalHax
           </p>
         </div>
@@ -230,18 +272,24 @@
     <!-- ADMIN: CARGAR KEYS -->
     <div class="page" id="page-loadKeys">
       <div class="page-title">Cargar keys</div>
-      <div class="page-sub">Pega las keys desde tu panel KeyAuth</div>
+      <div class="page-sub">Carga keys al stock global o al stock de un revendedor</div>
       <div class="fc">
         <h3>Instrucciones</h3>
         <p style="font-size:12px;color:var(--text2);font-family:var(--mono);line-height:1.8;">
           1. Ve a <strong style="color:var(--accent2)">keyauth.win</strong> → Licenses → Create License<br>
           2. Crea las keys (nivel, duración, cantidad)<br>
-          3. Cópialas y pégalas abajo (una por línea)
+          3. Elige destino, nivel, duración y pégalas abajo
         </p>
       </div>
       <div class="fc">
-        <h3>Agregar al stock</h3>
+        <h3>Agregar keys</h3>
         <div class="f-row" style="margin-bottom:12px;">
+          <div class="fg">
+            <label>Destino</label>
+            <select id="pkTarget">
+              <option value="global">Stock global</option>
+            </select>
+          </div>
           <div class="fg">
             <label>Nivel</label>
             <select id="pkLevel">
@@ -250,6 +298,8 @@
               <option value="3">3 — BYPASS2</option>
             </select>
           </div>
+        </div>
+        <div class="f-row" style="margin-bottom:12px;">
           <div class="fg">
             <label>Duración (etiqueta)</label>
             <select id="pkDur">
@@ -264,7 +314,7 @@
         </div>
         <textarea id="keyPasteArea" placeholder="ExternalHax-AAAAA&#10;ExternalHax-BBBBB&#10;ExternalHax-CCCCC" style="resize:vertical;min-height:120px;line-height:1.8;margin-bottom:10px;"></textarea>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="gbtn" onclick="uploadKeys()">Subir al stock</button>
+          <button class="gbtn" onclick="uploadKeys()">Subir keys</button>
         </div>
         <div class="smsg" id="pkStatus"></div>
       </div>
@@ -273,15 +323,16 @@
     <!-- ADMIN: USUARIOS -->
     <div class="page" id="page-manageUsers">
       <div class="page-title">Usuarios</div>
-      <div class="page-sub">Crea y gestiona cuentas de clientes</div>
+      <div class="page-sub">Crea y gestiona todas las cuentas</div>
       <div class="fc">
-        <h3>Crear usuario</h3>
+        <h3>Crear cuenta</h3>
         <div class="f-row3">
           <div class="fg"><label>Usuario</label><input type="text" id="newUsername" placeholder="cliente1"/></div>
           <div class="fg"><label>Contraseña</label><input type="password" id="newPassword" placeholder="••••••••"/></div>
           <div class="fg"><label>Rol</label>
             <select id="newRole">
               <option value="user">Usuario (cliente)</option>
+              <option value="reseller">Revendedor</option>
               <option value="admin">Admin</option>
             </select>
           </div>
@@ -311,32 +362,85 @@
       </div>
     </div>
 
+    <!-- RESELLER: MI STOCK -->
+    <div class="page" id="page-resellerKeys">
+      <div class="page-title">Mi stock</div>
+      <div class="page-sub">Keys asignadas a tu cuenta por el admin</div>
+      <div class="fc">
+        <h3>Cuota (máx. 100 por nivel)</h3>
+        <div class="quota-grid" id="resellerQuota"></div>
+      </div>
+      <div class="fc">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 style="margin:0">Keys disponibles (<span id="resellerStockCount">0</span>)</h3>
+          <button class="gbtn sec" style="font-size:11px;padding:6px 14px;" onclick="loadResellerStock()">Actualizar</button>
+        </div>
+        <ul class="key-list" id="resellerKeysList"><li class="empty">Cargando...</li></ul>
+      </div>
+    </div>
+
+    <!-- RESELLER: MIS CLIENTES -->
+    <div class="page" id="page-resellerUsers">
+      <div class="page-title">Mis clientes</div>
+      <div class="page-sub">Gestiona las cuentas de tus clientes</div>
+      <div class="fc">
+        <h3>Crear cliente</h3>
+        <div class="f-row">
+          <div class="fg"><label>Usuario</label><input type="text" id="rNewUsername" placeholder="micliente1"/></div>
+          <div class="fg"><label>Contraseña</label><input type="password" id="rNewPassword" placeholder="••••••••"/></div>
+        </div>
+        <button class="gbtn" onclick="resellerCreateUser()">Crear cliente</button>
+        <div class="smsg" id="rUserStatus"></div>
+      </div>
+      <div class="fc">
+        <h3>Mis clientes</h3>
+        <div class="twrap"><table>
+          <thead><tr><th>Usuario</th><th>Keys obtenidas</th><th>Acción</th></tr></thead>
+          <tbody id="resellerUserTable"><tr><td colspan="3" class="empty">Cargando...</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
     <!-- USER: OBTENER KEY -->
     <div class="page" id="page-getKey">
       <div class="page-title">Obtener key</div>
-      <div class="page-sub">Selecciona el nivel y obtén tu licencia</div>
+      <div class="page-sub">Selecciona el nivel y duración de tu licencia</div>
 
       <!-- key ya asignada -->
       <div id="myKeyBox" style="display:none;">
         <div class="my-key-box">
-          <div style="font-size:12px;color:var(--text2);font-family:var(--mono);">Tu key asignada</div>
+          <div style="font-size:12px;color:var(--text2);font-family:var(--mono);">Tu key activa</div>
           <div class="my-key-val" id="myKeyVal">—</div>
           <div class="my-key-meta" id="myKeyMeta">—</div>
           <button class="gbtn" style="margin-top:1rem;" onclick="copyMyKey()">Copiar key</button>
         </div>
-        <p style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;">Esta es tu key permanente. Guárdala bien.</p>
+        <button class="gbtn sec" style="font-size:12px;" onclick="requestAnotherKey()">Obtener otra key</button>
       </div>
 
       <!-- solicitar key -->
       <div id="requestKeyBox">
         <div class="fc">
           <h3>Solicitar licencia</h3>
-          <div class="fg" style="margin-bottom:12px;">
-            <label>Nivel</label>
-            <select id="reqLevel">
-              <option value="2">2 — ULTIMATE</option>
-              <option value="3">3 — BYPASS2</option>
-            </select>
+          <div class="f-row" style="margin-bottom:16px;">
+            <div class="fg">
+              <label>Nivel</label>
+              <select id="reqLevel">
+                <option value="1">1 — default</option>
+                <option value="2" selected>2 — ULTIMATE</option>
+                <option value="3">3 — BYPASS2</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Duración</label>
+              <select id="reqDur">
+                <option value="1 día">1 día</option>
+                <option value="7 días">7 días</option>
+                <option value="15 días">15 días</option>
+                <option value="30 días" selected>30 días</option>
+                <option value="90 días">90 días</option>
+                <option value="Lifetime">Lifetime</option>
+              </select>
+            </div>
           </div>
           <button class="gbtn" id="reqBtn" onclick="requestKey()">Obtener key</button>
           <div class="smsg" id="reqStatus"></div>
@@ -344,13 +448,13 @@
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /content -->
+</div><!-- /mainPanel -->
 
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC8hyK8YFGLhI7pMqluRfCoeT777RUcO5M",
@@ -365,14 +469,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// ── ESTADO ────────────────────────────────────────────────
 let currentUser = null; // {username, role}
-
 const levelNames = {'1':'default','2':'ULTIMATE','3':'BYPASS2'};
+const RESELLER_QUOTA = 100;
 
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
-  // Crear admin por defecto si no existe
   const adminSnap = await get(ref(db,'users/admin'));
   if (!adminSnap.exists()) {
     await set(ref(db,'users/admin'), { password:'admin123', role:'admin', keysObtained:0 });
@@ -397,22 +499,28 @@ window.doLogin = async function() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainPanel').style.display = 'block';
 
-  // UI por rol
-  const isAdmin = data.role === 'admin';
-  document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
-  document.querySelectorAll('.user-only').forEach(el  => el.style.display = isAdmin ? 'none' : '');
-  document.getElementById('adminStats').style.display   = isAdmin ? '' : 'none';
-  document.getElementById('userHomeMsg').style.display  = isAdmin ? 'none' : '';
+  const isAdmin    = data.role === 'admin';
+  const isReseller = data.role === 'reseller';
+  const isUser     = data.role === 'user';
+
+  document.querySelectorAll('.admin-only').forEach(el    => el.style.display = isAdmin    ? '' : 'none');
+  document.querySelectorAll('.reseller-only').forEach(el => el.style.display = isReseller ? '' : 'none');
+  document.querySelectorAll('.user-only').forEach(el     => el.style.display = isUser     ? '' : 'none');
+
+  document.getElementById('adminStats').style.display      = isAdmin    ? '' : 'none';
+  document.getElementById('resellerHomeMsg').style.display = isReseller ? '' : 'none';
+  document.getElementById('userHomeMsg').style.display     = isUser     ? '' : 'none';
 
   const av = document.getElementById('uAv');
   av.textContent = u[0].toUpperCase();
-  av.className = 'u-av ' + data.role;
+  av.className   = 'u-av ' + data.role;
   document.getElementById('uName').textContent = u;
-  document.getElementById('uRole').textContent = data.role === 'admin' ? 'Administrador' : 'Cliente';
-  document.getElementById('homeSubtitle').textContent = isAdmin ? 'Vista de administrador · EXTERNALHAX' : 'Bienvenido, '+u+' · EXTERNALHAX';
+  document.getElementById('uRole').textContent = isAdmin ? 'Administrador' : isReseller ? 'Revendedor' : 'Cliente';
+  document.getElementById('homeSubtitle').textContent = isAdmin ? 'Vista de administrador · EXTERNALHAX' : isReseller ? 'Vista de revendedor · EXTERNALHAX' : 'Bienvenido, '+u+' · EXTERNALHAX';
 
-  if (isAdmin) { loadStats(); loadAllKeys(); loadUsers(); }
-  else { checkMyKey(); }
+  if (isAdmin)    { loadStats(); loadAllKeys(); loadUsers(); loadResellerTargets(); }
+  if (isReseller) { loadResellerQuota('resellerQuotaHome'); loadResellerStock(); loadResellerUserTable(); }
+  if (isUser)     { checkMyKey(); }
 }
 
 function showLoginErr() {
@@ -436,27 +544,65 @@ window.showPage = function(name, btn) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (name==='allKeys') loadAllKeys();
-  if (name==='manageUsers') loadUsers();
+  if (name==='allKeys')       loadAllKeys();
+  if (name==='manageUsers')   loadUsers();
+  if (name==='resellerKeys')  { loadResellerQuota('resellerQuota'); loadResellerStock(); }
+  if (name==='resellerUsers') loadResellerUserTable();
+}
+
+// ── ADMIN: CARGAR DESTINOS ────────────────────────────────
+async function loadResellerTargets() {
+  const snap = await get(ref(db,'users'));
+  const data = snap.val() || {};
+  const sel  = document.getElementById('pkTarget');
+  // Limpiar opciones excepto global
+  sel.innerHTML = '<option value="global">Stock global</option>';
+  Object.entries(data).forEach(([u,d]) => {
+    if (d.role === 'reseller') {
+      const opt = document.createElement('option');
+      opt.value = 'reseller:'+u;
+      opt.textContent = 'Revendedor: '+u;
+      sel.appendChild(opt);
+    }
+  });
 }
 
 // ── ADMIN: CARGAR KEYS ────────────────────────────────────
 window.uploadKeys = async function() {
-  const raw   = document.getElementById('keyPasteArea').value;
-  const level = document.getElementById('pkLevel').value;
-  const dur   = document.getElementById('pkDur').value;
-  const st    = document.getElementById('pkStatus');
-  const keys  = raw.split('\n').map(k=>k.trim()).filter(Boolean);
+  const raw    = document.getElementById('keyPasteArea').value;
+  const level  = document.getElementById('pkLevel').value;
+  const dur    = document.getElementById('pkDur').value;
+  const target = document.getElementById('pkTarget').value;
+  const st     = document.getElementById('pkStatus');
+  const keys   = raw.split('\n').map(k=>k.trim()).filter(Boolean);
   if (!keys.length) { showMsg(st,'⚠ No pegaste ninguna key.','err'); return; }
 
-  let count = 0;
+  // Si es revendedor, verificar cuota
+  if (target.startsWith('reseller:')) {
+    const resellerName = target.split(':')[1];
+    const stockSnap    = await get(ref(db,'resellerStock/'+resellerName));
+    const existing     = stockSnap.val() || {};
+    const countThisLevel = Object.values(existing).filter(k => k.level===level).length;
+    const remaining    = RESELLER_QUOTA - countThisLevel;
+    if (remaining <= 0) {
+      showMsg(st,`⚠ ${resellerName} ya tiene 100 keys de nivel ${level}.`,'err'); return;
+    }
+    const toUpload = keys.slice(0, remaining);
+    for (const k of toUpload) {
+      await push(ref(db,'resellerStock/'+resellerName), { key:k, level, duration:dur, used:false, assignedTo:null });
+    }
+    document.getElementById('keyPasteArea').value='';
+    showMsg(st, `✓ ${toUpload.length} key(s) cargadas al stock de ${resellerName}.${toUpload.length < keys.length ? ' (Algunas omitidas por cuota)' : ''}`, 'ok');
+    return;
+  }
+
+  // Stock global
   for (const k of keys) {
     await push(ref(db,'stock'), { key:k, level, duration:dur, used:false, assignedTo:null });
-    count++;
   }
   document.getElementById('keyPasteArea').value='';
   loadStats(); loadAllKeys();
-  showMsg(st, `✓ ${count} key(s) subidas al stock.`, 'ok');
+  showMsg(st, `✓ ${keys.length} key(s) subidas al stock global.`, 'ok');
 }
 
 // ── ADMIN: STATS ──────────────────────────────────────────
@@ -468,10 +614,10 @@ async function loadStats() {
   const users = usersSnap.val() || {};
   const keys  = Object.values(stock);
   const avail = keys.filter(k=>!k.used);
-  document.getElementById('stTotal').textContent = avail.length;
-  document.getElementById('stLv2').textContent   = avail.filter(k=>k.level==='2').length;
-  document.getElementById('stLv3').textContent   = avail.filter(k=>k.level==='3').length;
-  document.getElementById('stUsers').textContent = Object.keys(users).length;
+  document.getElementById('stTotal').textContent  = avail.length;
+  document.getElementById('stLv2').textContent    = avail.filter(k=>k.level==='2').length;
+  document.getElementById('stLv3').textContent    = avail.filter(k=>k.level==='3').length;
+  document.getElementById('stUsers').textContent  = Object.keys(users).length;
 }
 
 // ── ADMIN: STOCK TOTAL ────────────────────────────────────
@@ -515,6 +661,7 @@ window.createUser = async function() {
   document.getElementById('newPassword').value='';
   showMsg(st, `✓ Usuario "${u}" creado como ${r}.`, 'ok');
   loadUsers(); loadStats();
+  if (r === 'reseller') loadResellerTargets();
 }
 
 async function loadUsers() {
@@ -526,7 +673,7 @@ async function loadUsers() {
   tbody.innerHTML = entries.map(([u,d]) => `
     <tr>
       <td style="color:var(--text);font-family:var(--mono)">${u}</td>
-      <td><span class="tag-badge ${d.role==='admin'?'tag-admin':'tag-user'}">${d.role}</span></td>
+      <td><span class="tag-badge tag-${d.role}">${d.role}</span></td>
       <td style="color:var(--text2)">${d.keysObtained||0}</td>
       <td>${u!=='admin'?`<button class="cpbtn" style="color:var(--danger);border-color:rgba(248,113,113,.3);" onclick="deleteUser('${u}')">Eliminar</button>`:'—'}</td>
     </tr>`).join('');
@@ -538,12 +685,87 @@ window.deleteUser = async function(u) {
   loadUsers(); loadStats();
 }
 
+// ── RESELLER: CUOTA ───────────────────────────────────────
+async function loadResellerQuota(containerId) {
+  const snap = await get(ref(db,'resellerStock/'+currentUser.username));
+  const data = snap.val() || {};
+  const keys = Object.values(data);
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const levels = ['1','2','3'];
+  container.innerHTML = levels.map(lv => {
+    const total = keys.filter(k=>k.level===lv).length;
+    const used  = keys.filter(k=>k.level===lv && k.used).length;
+    const avail = total - used;
+    const pct   = Math.round((total/RESELLER_QUOTA)*100);
+    return `
+      <div class="quota-card">
+        <div class="quota-label">Nivel ${lv} · ${levelNames[lv]}</div>
+        <div class="quota-bar-wrap"><div class="quota-bar" style="width:${pct}%"></div></div>
+        <div class="quota-nums">${total}/${RESELLER_QUOTA} cargadas · <span style="color:var(--success)">${avail} disponibles</span></div>
+      </div>`;
+  }).join('');
+}
+
+// ── RESELLER: MI STOCK ────────────────────────────────────
+window.loadResellerStock = async function() {
+  const snap = await get(ref(db,'resellerStock/'+currentUser.username));
+  const list = document.getElementById('resellerKeysList');
+  const data = snap.val() || {};
+  const entries = Object.entries(data);
+  document.getElementById('resellerStockCount').textContent = entries.filter(([,k])=>!k.used).length;
+  if (!entries.length) { list.innerHTML='<li class="empty">Sin keys en tu stock.</li>'; return; }
+  list.innerHTML = entries.map(([id,k]) => `
+    <li class="key-item">
+      <span class="kb kb${k.level}">Lvl ${k.level}·${levelNames[k.level]}</span>
+      <span class="kb" style="background:var(--bg);color:var(--text3);border:0.5px solid var(--border);font-size:10px;">${k.duration}</span>
+      ${k.used ? `<span class="kb" style="background:rgba(248,113,113,.15);color:var(--danger);">Usada · ${k.assignedTo}</span>` : '<span class="kb" style="background:rgba(34,211,160,.1);color:var(--success);">Disponible</span>'}
+      <span class="kbt">${k.key}</span>
+      <button class="cpbtn" onclick="cpKey('${k.key}',this)">Copiar</button>
+    </li>`).join('');
+}
+
+// ── RESELLER: CREAR CLIENTE ───────────────────────────────
+window.resellerCreateUser = async function() {
+  const u  = document.getElementById('rNewUsername').value.trim().toLowerCase();
+  const p  = document.getElementById('rNewPassword').value;
+  const st = document.getElementById('rUserStatus');
+  if (!u || !p) { showMsg(st,'⚠ Completa usuario y contraseña.','err'); return; }
+
+  const snap = await get(ref(db,'users/'+u));
+  if (snap.exists()) { showMsg(st,'⚠ Ese usuario ya existe.','err'); return; }
+
+  await set(ref(db,'users/'+u), { password:p, role:'user', keysObtained:0, createdBy: currentUser.username });
+  document.getElementById('rNewUsername').value='';
+  document.getElementById('rNewPassword').value='';
+  showMsg(st, `✓ Cliente "${u}" creado.`, 'ok');
+  loadResellerUserTable();
+}
+
+async function loadResellerUserTable() {
+  const snap  = await get(ref(db,'users'));
+  const tbody = document.getElementById('resellerUserTable');
+  const data  = snap.val() || {};
+  const myUsers = Object.entries(data).filter(([,d]) => d.createdBy === currentUser.username);
+  if (!myUsers.length) { tbody.innerHTML='<tr><td colspan="3" class="empty">Sin clientes todavía.</td></tr>'; return; }
+  tbody.innerHTML = myUsers.map(([u,d]) => `
+    <tr>
+      <td style="color:var(--text);font-family:var(--mono)">${u}</td>
+      <td style="color:var(--text2)">${d.keysObtained||0}</td>
+      <td><button class="cpbtn" style="color:var(--danger);border-color:rgba(248,113,113,.3);" onclick="resellerDeleteUser('${u}')">Eliminar</button></td>
+    </tr>`).join('');
+}
+
+window.resellerDeleteUser = async function(u) {
+  if (!confirm(`¿Eliminar al cliente "${u}"?`)) return;
+  await remove(ref(db,'users/'+u));
+  loadResellerUserTable();
+}
+
 // ── USER: OBTENER KEY ─────────────────────────────────────
 async function checkMyKey() {
   const snap = await get(ref(db,'users/'+currentUser.username+'/assignedKey'));
-  if (snap.exists()) {
-    showMyKey(snap.val());
-  }
+  if (snap.exists()) showMyKey(snap.val());
 }
 
 function showMyKey(keyData) {
@@ -553,36 +775,61 @@ function showMyKey(keyData) {
   document.getElementById('myKeyMeta').textContent = `Nivel ${keyData.level} · ${levelNames[keyData.level]} · ${keyData.duration}`;
 }
 
+window.requestAnotherKey = function() {
+  document.getElementById('myKeyBox').style.display = 'none';
+  document.getElementById('requestKeyBox').style.display = 'block';
+}
+
 window.requestKey = async function() {
   const level = document.getElementById('reqLevel').value;
+  const dur   = document.getElementById('reqDur').value;
   const st    = document.getElementById('reqStatus');
   const btn   = document.getElementById('reqBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Buscando...';
 
-  // Buscar key disponible del nivel pedido
-  const snap = await get(ref(db,'stock'));
+  // Detectar si el usuario fue creado por un revendedor
+  const userSnap = await get(ref(db,'users/'+currentUser.username));
+  const userData = userSnap.val() || {};
+  const createdBy = userData.createdBy || null;
+
+  let stockPath = 'stock';
+  if (createdBy) {
+    // Buscar en el stock del revendedor
+    const rSnap = await get(ref(db,'resellerStock/'+createdBy));
+    const rStock = rSnap.val() || {};
+    const match = Object.entries(rStock).find(([,k]) => k.level===level && k.duration===dur && !k.used);
+    if (match) {
+      const [keyId, keyData] = match;
+      await set(ref(db,'resellerStock/'+createdBy+'/'+keyId+'/used'), true);
+      await set(ref(db,'resellerStock/'+createdBy+'/'+keyId+'/assignedTo'), currentUser.username);
+      const assigned = { key:keyData.key, level:keyData.level, duration:keyData.duration, keyId, source: createdBy };
+      await set(ref(db,'users/'+currentUser.username+'/assignedKey'), assigned);
+      const cSnap = await get(ref(db,'users/'+currentUser.username+'/keysObtained'));
+      await set(ref(db,'users/'+currentUser.username+'/keysObtained'), (cSnap.val()||0)+1);
+      showMsg(st,'✓ Key asignada correctamente.','ok');
+      setTimeout(() => showMyKey(assigned), 800);
+      btn.disabled=false; btn.textContent='Obtener key'; return;
+    }
+  }
+
+  // Buscar en stock global
+  const snap  = await get(ref(db,'stock'));
   const stock = snap.val() || {};
-  const match = Object.entries(stock).find(([id,k]) => k.level===level && !k.used);
+  const match = Object.entries(stock).find(([,k]) => k.level===level && k.duration===dur && !k.used);
 
   if (!match) {
-    showMsg(st,'⚠ No hay keys disponibles de ese nivel. Contacta al admin.','err');
+    showMsg(st,'⚠ No hay keys disponibles con ese nivel y duración. Contacta al admin.','err');
     btn.disabled=false; btn.textContent='Obtener key'; return;
   }
 
   const [keyId, keyData] = match;
-
-  // Marcar como usada y asignar al usuario
   await set(ref(db,'stock/'+keyId+'/used'), true);
   await set(ref(db,'stock/'+keyId+'/assignedTo'), currentUser.username);
-
   const assigned = { key:keyData.key, level:keyData.level, duration:keyData.duration, keyId };
   await set(ref(db,'users/'+currentUser.username+'/assignedKey'), assigned);
-
-  // Sumar al contador
-  const countSnap = await get(ref(db,'users/'+currentUser.username+'/keysObtained'));
-  await set(ref(db,'users/'+currentUser.username+'/keysObtained'), (countSnap.val()||0)+1);
-
+  const cSnap = await get(ref(db,'users/'+currentUser.username+'/keysObtained'));
+  await set(ref(db,'users/'+currentUser.username+'/keysObtained'), (cSnap.val()||0)+1);
   showMsg(st,'✓ Key asignada correctamente.','ok');
   setTimeout(() => showMyKey(assigned), 800);
   btn.disabled=false; btn.textContent='Obtener key';
