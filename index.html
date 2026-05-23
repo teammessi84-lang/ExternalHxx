@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ExternalHax — Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;
+    --border:rgba(120,120,255,0.12);--border2:rgba(120,120,255,0.22);
+    --accent:#6c63ff;--accent2:#a78bfa;--accent-glow:rgba(108,99,255,0.18);
+    --text:#e8e8f0;--text2:#9090b0;--text3:#5a5a7a;
+    --success:#22d3a0;--danger:#f87171;--warning:#fbbf24;
+    --mono:'Space Mono',monospace;--sans:'Syne',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+  /* LOGIN */
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,rgba(108,99,255,0.12) 0%,transparent 70%);}
+  .login-box{background:var(--bg2);border:0.5px solid var(--border2);border-radius:16px;padding:2.5rem;width:360px;}
+  .login-logo{text-align:center;margin-bottom:2rem;}
+  .logo-mark{width:52px;height:52px;border-radius:12px;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:18px;color:#fff;margin-bottom:12px;}
+  .login-logo h1{font-size:20px;font-weight:700;}
+  .login-logo p{font-size:12px;color:var(--text2);font-family:var(--mono);margin-top:4px;}
+  .fl{margin-bottom:16px;}
+  .fl label{display:block;font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);}
+  .fl input{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s;}
+  .fl input:focus{border-color:var(--accent);}
+  .btn-p{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;}
+  .btn-p:hover{opacity:.88;}
+  .login-err{color:var(--danger);font-size:12px;font-family:var(--mono);margin-top:10px;text-align:center;display:none;}
+
+  /* LAYOUT */
+  #mainPanel{display:none;min-height:100vh;}
+  .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;}
+  .sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem;padding-left:4px;}
+  .sb-logo .lm{width:34px;height:34px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:12px;color:#fff;}
+  .sb-logo span{font-size:15px;font-weight:700;}
+  .nav-sec{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin:1rem 0 6px 4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:var(--accent-glow);color:var(--accent2);border:0.5px solid rgba(108,99,255,.25);}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;}
+  .sb-bottom{margin-top:auto;}
+  .user-chip{display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:8px;border:0.5px solid var(--border);}
+  .u-av{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+  .u-av.admin{background:#6c63ff;}
+  .u-av.user{background:#0e7a5a;}
+  .u-info{flex:1;min-width:0;}
+  .u-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .u-role{font-size:10px;color:var(--accent2);font-family:var(--mono);}
+  .logout-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:4px;}
+  .logout-btn:hover{color:var(--danger);}
+
+  /* CONTENT */
+  .content{margin-left:220px;padding:2rem;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .page-title{font-size:22px;font-weight:700;margin-bottom:4px;}
+  .page-sub{font-size:13px;color:var(--text2);font-family:var(--mono);margin-bottom:2rem;}
+
+  /* CARDS */
+  .fc{background:var(--bg2);border:0.5px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1rem;}
+  .fc h3{font-size:14px;font-weight:600;margin-bottom:1rem;}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:2rem;}
+  .stat-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:12px;padding:1.2rem;}
+  .stat-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+  .stat-value{font-size:26px;font-weight:700;font-family:var(--mono);color:var(--accent2);}
+  .stat-desc{font-size:11px;color:var(--text2);margin-top:4px;}
+
+  /* FORM */
+  .f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .f-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+  .fg{display:flex;flex-direction:column;}
+  .fg label{display:block;font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);}
+  .fg input,.fg select,textarea{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;}
+  .fg input:focus,.fg select:focus{border-color:var(--accent);}
+  .gbtn{padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;}
+  .gbtn:hover{opacity:.85;}
+  .gbtn.sec{background:var(--bg3);color:var(--text2);border:0.5px solid var(--border2);}
+  .gbtn.danger{background:transparent;color:var(--danger);border:0.5px solid rgba(248,113,113,.3);}
+  .gbtn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* KEYS */
+  .key-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:1rem;}
+  .key-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:0.5px solid var(--border);border-radius:8px;padding:8px 12px;}
+  .kb{font-size:10px;padding:2px 8px;border-radius:6px;font-family:var(--mono);white-space:nowrap;flex-shrink:0;}
+  .kb1{background:rgba(90,90,122,.3);color:var(--text2);}
+  .kb2{background:rgba(108,99,255,.2);color:var(--accent2);}
+  .kb3{background:rgba(34,211,160,.15);color:var(--success);}
+  .kbt{font-family:var(--mono);font-size:12px;color:var(--text);flex:1;word-break:break-all;}
+  .cpbtn{background:none;border:0.5px solid var(--border2);border-radius:6px;cursor:pointer;color:var(--text2);padding:4px 8px;font-size:11px;font-family:var(--mono);transition:all .15s;flex-shrink:0;}
+  .cpbtn:hover{background:var(--bg2);color:var(--accent2);}
+  .cpbtn.ok{color:var(--success);border-color:var(--success);}
+
+  /* MY KEY BOX (usuario) */
+  .my-key-box{background:var(--bg3);border:0.5px solid var(--accent);border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1rem;}
+  .my-key-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent2);letter-spacing:.05em;margin:1rem 0;}
+  .my-key-meta{font-size:11px;color:var(--text2);font-family:var(--mono);}
+
+  /* STATUS */
+  .smsg{font-size:12px;padding:8px 12px;border-radius:8px;margin-top:10px;font-family:var(--mono);display:none;}
+  .smsg.ok{background:rgba(34,211,160,.1);color:var(--success);border:0.5px solid rgba(34,211,160,.3);display:block;}
+  .smsg.err{background:rgba(248,113,113,.1);color:var(--danger);border:0.5px solid rgba(248,113,113,.3);display:block;}
+
+  /* TABLE */
+  .twrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono);}
+  th{text-align:left;padding:8px 12px;color:var(--text3);font-weight:400;border-bottom:0.5px solid var(--border);text-transform:uppercase;font-size:10px;letter-spacing:.08em;}
+  td{padding:10px 12px;border-bottom:0.5px solid var(--border);color:var(--text2);}
+  tr:hover td{background:var(--bg3);}
+
+  .empty{text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono);font-size:13px;}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;font-family:var(--mono);color:var(--text2);font-size:13px;flex-direction:column;gap:12px;}
+  .tag-badge{font-size:10px;padding:2px 10px;border-radius:20px;font-family:var(--mono);}
+  .tag-admin{background:rgba(108,99,255,.2);color:var(--accent2);}
+  .tag-user{background:rgba(34,211,160,.15);color:var(--success);}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="logo-mark">EH</div>
+  <span>Cargando panel...</span>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen" style="display:none;">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-mark">EH</div>
+      <h1>ExternalHax</h1>
+      <p>Panel de licencias · EXTERNALHAX</p>
+    </div>
+    <div class="fl">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="tu usuario" autocomplete="off"/>
+    </div>
+    <div class="fl">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn-p" onclick="doLogin()">Iniciar sesión</button>
+    <p class="login-err" id="loginErr">Usuario o contraseña incorrectos.</p>
+    <p style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;margin-top:1.2rem;">Acceso privado · Solo cuentas autorizadas</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainPanel">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="lm">EH</div>
+      <span>ExternalHax</span>
+    </div>
+
+    <div class="nav-sec">Panel</div>
+    <button class="nav-item active" onclick="showPage('home',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Inicio
+    </button>
+
+    <!-- ADMIN ONLY -->
+    <div class="nav-sec admin-only">Admin</div>
+    <button class="nav-item admin-only" onclick="showPage('loadKeys',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      Cargar keys
+    </button>
+    <button class="nav-item admin-only" onclick="showPage('manageUsers',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Usuarios
+    </button>
+    <button class="nav-item admin-only" onclick="showPage('allKeys',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0 2-2h2a2 2 0 0 0 2 2"/></svg>
+      Stock total
+    </button>
+
+    <!-- USER ONLY -->
+    <div class="nav-sec user-only">Mis keys</div>
+    <button class="nav-item user-only" onclick="showPage('getKey',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      Obtener key
+    </button>
+
+    <div class="sb-bottom">
+      <div class="user-chip">
+        <div class="u-av" id="uAv">?</div>
+        <div class="u-info">
+          <div class="u-name" id="uName">—</div>
+          <div class="u-role" id="uRole">—</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Salir">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="page-title">Bienvenido</div>
+      <div class="page-sub" id="homeSubtitle">Panel ExternalHax</div>
+      <div class="stats-grid" id="adminStats">
+        <div class="stat-card"><div class="stat-label">Stock total</div><div class="stat-value" id="stTotal">—</div><div class="stat-desc">Keys disponibles</div></div>
+        <div class="stat-card"><div class="stat-label">ULTIMATE (Lvl 2)</div><div class="stat-value" id="stLv2" style="color:var(--accent2)">—</div><div class="stat-desc">En stock</div></div>
+        <div class="stat-card"><div class="stat-label">BYPASS2 (Lvl 3)</div><div class="stat-value" id="stLv3" style="color:var(--success)">—</div><div class="stat-desc">En stock</div></div>
+        <div class="stat-card"><div class="stat-label">Usuarios</div><div class="stat-value" id="stUsers" style="color:var(--text2)">—</div><div class="stat-desc">Registrados</div></div>
+      </div>
+      <!-- User home -->
+      <div id="userHomeMsg" style="display:none;">
+        <div class="fc">
+          <h3>¿Cómo obtener tu key?</h3>
+          <p style="font-size:13px;color:var(--text2);font-family:var(--mono);line-height:1.8;">
+            1. Ve a <strong style="color:var(--accent2)">Obtener key</strong> en el menú<br>
+            2. Elige el nivel y haz clic en <strong style="color:var(--accent2)">Obtener key</strong><br>
+            3. Tu key aparecerá automáticamente<br>
+            4. Cópiala y úsala en ExternalHax
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN: CARGAR KEYS -->
+    <div class="page" id="page-loadKeys">
+      <div class="page-title">Cargar keys</div>
+      <div class="page-sub">Pega las keys desde tu panel KeyAuth</div>
+      <div class="fc">
+        <h3>Instrucciones</h3>
+        <p style="font-size:12px;color:var(--text2);font-family:var(--mono);line-height:1.8;">
+          1. Ve a <strong style="color:var(--accent2)">keyauth.win</strong> → Licenses → Create License<br>
+          2. Crea las keys (nivel, duración, cantidad)<br>
+          3. Cópialas y pégalas abajo (una por línea)
+        </p>
+      </div>
+      <div class="fc">
+        <h3>Agregar al stock</h3>
+        <div class="f-row" style="margin-bottom:12px;">
+          <div class="fg">
+            <label>Nivel</label>
+            <select id="pkLevel">
+              <option value="1">1 — default</option>
+              <option value="2" selected>2 — ULTIMATE</option>
+              <option value="3">3 — BYPASS2</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Duración (etiqueta)</label>
+            <select id="pkDur">
+              <option value="1 día">1 día</option>
+              <option value="7 días">7 días</option>
+              <option value="15 días">15 días</option>
+              <option value="30 días" selected>30 días</option>
+              <option value="90 días">90 días</option>
+              <option value="Lifetime">Lifetime</option>
+            </select>
+          </div>
+        </div>
+        <textarea id="keyPasteArea" placeholder="ExternalHax-AAAAA&#10;ExternalHax-BBBBB&#10;ExternalHax-CCCCC" style="resize:vertical;min-height:120px;line-height:1.8;margin-bottom:10px;"></textarea>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="gbtn" onclick="uploadKeys()">Subir al stock</button>
+        </div>
+        <div class="smsg" id="pkStatus"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: USUARIOS -->
+    <div class="page" id="page-manageUsers">
+      <div class="page-title">Usuarios</div>
+      <div class="page-sub">Crea y gestiona cuentas de clientes</div>
+      <div class="fc">
+        <h3>Crear usuario</h3>
+        <div class="f-row3">
+          <div class="fg"><label>Usuario</label><input type="text" id="newUsername" placeholder="cliente1"/></div>
+          <div class="fg"><label>Contraseña</label><input type="password" id="newPassword" placeholder="••••••••"/></div>
+          <div class="fg"><label>Rol</label>
+            <select id="newRole">
+              <option value="user">Usuario (cliente)</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <button class="gbtn" onclick="createUser()">Crear cuenta</button>
+        <div class="smsg" id="userStatus"></div>
+      </div>
+      <div class="fc">
+        <h3>Cuentas existentes</h3>
+        <div class="twrap"><table>
+          <thead><tr><th>Usuario</th><th>Rol</th><th>Keys obtenidas</th><th>Acción</th></tr></thead>
+          <tbody id="userTable"><tr><td colspan="4" class="empty">Cargando...</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: STOCK TOTAL -->
+    <div class="page" id="page-allKeys">
+      <div class="page-title">Stock total</div>
+      <div class="page-sub">Todas las keys en la base de datos</div>
+      <div class="fc">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 style="margin:0">Keys en stock (<span id="stockCount">0</span>)</h3>
+          <button class="gbtn sec" style="font-size:11px;padding:6px 14px;" onclick="loadAllKeys()">Actualizar</button>
+        </div>
+        <ul class="key-list" id="allKeysList"><li class="empty">Cargando...</li></ul>
+      </div>
+    </div>
+
+    <!-- USER: OBTENER KEY -->
+    <div class="page" id="page-getKey">
+      <div class="page-title">Obtener key</div>
+      <div class="page-sub">Selecciona el nivel y obtén tu licencia</div>
+
+      <!-- key ya asignada -->
+      <div id="myKeyBox" style="display:none;">
+        <div class="my-key-box">
+          <div style="font-size:12px;color:var(--text2);font-family:var(--mono);">Tu key asignada</div>
+          <div class="my-key-val" id="myKeyVal">—</div>
+          <div class="my-key-meta" id="myKeyMeta">—</div>
+          <button class="gbtn" style="margin-top:1rem;" onclick="copyMyKey()">Copiar key</button>
+        </div>
+        <p style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;">Esta es tu key permanente. Guárdala bien.</p>
+      </div>
+
+      <!-- solicitar key -->
+      <div id="requestKeyBox">
+        <div class="fc">
+          <h3>Solicitar licencia</h3>
+          <div class="fg" style="margin-bottom:12px;">
+            <label>Nivel</label>
+            <select id="reqLevel">
+              <option value="2">2 — ULTIMATE</option>
+              <option value="3">3 — BYPASS2</option>
+            </select>
+          </div>
+          <button class="gbtn" id="reqBtn" onclick="requestKey()">Obtener key</button>
+          <div class="smsg" id="reqStatus"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC8hyK8YFGLhI7pMqluRfCoeT777RUcO5M",
+  authDomain: "externalhax.firebaseapp.com",
+  projectId: "externalhax",
+  storageBucket: "externalhax.firebasestorage.app",
+  messagingSenderId: "753276885195",
+  appId: "1:753276885195:web:6cee8d332315b0d0e5634e",
+  databaseURL: "https://externalhax-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ── ESTADO ────────────────────────────────────────────────
+let currentUser = null; // {username, role}
+
+const levelNames = {'1':'default','2':'ULTIMATE','3':'BYPASS2'};
+
+// ── INIT ──────────────────────────────────────────────────
+async function init() {
+  // Crear admin por defecto si no existe
+  const adminSnap = await get(ref(db,'users/admin'));
+  if (!adminSnap.exists()) {
+    await set(ref(db,'users/admin'), { password:'admin123', role:'admin', keysObtained:0 });
+  }
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+init();
+
+// ── LOGIN ─────────────────────────────────────────────────
+window.doLogin = async function() {
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) return;
+
+  const snap = await get(ref(db,'users/'+u));
+  if (!snap.exists()) { showLoginErr(); return; }
+  const data = snap.val();
+  if (data.password !== p) { showLoginErr(); return; }
+
+  currentUser = { username: u, role: data.role };
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainPanel').style.display = 'block';
+
+  // UI por rol
+  const isAdmin = data.role === 'admin';
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
+  document.querySelectorAll('.user-only').forEach(el  => el.style.display = isAdmin ? 'none' : '');
+  document.getElementById('adminStats').style.display   = isAdmin ? '' : 'none';
+  document.getElementById('userHomeMsg').style.display  = isAdmin ? 'none' : '';
+
+  const av = document.getElementById('uAv');
+  av.textContent = u[0].toUpperCase();
+  av.className = 'u-av ' + data.role;
+  document.getElementById('uName').textContent = u;
+  document.getElementById('uRole').textContent = data.role === 'admin' ? 'Administrador' : 'Cliente';
+  document.getElementById('homeSubtitle').textContent = isAdmin ? 'Vista de administrador · EXTERNALHAX' : 'Bienvenido, '+u+' · EXTERNALHAX';
+
+  if (isAdmin) { loadStats(); loadAllKeys(); loadUsers(); }
+  else { checkMyKey(); }
+}
+
+function showLoginErr() {
+  const e = document.getElementById('loginErr');
+  e.style.display = 'block';
+  setTimeout(()=> e.style.display='none', 2500);
+}
+
+window.doLogout = function() {
+  currentUser = null;
+  document.getElementById('mainPanel').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  showPage('home', document.querySelector('.nav-item'));
+}
+
+// ── NAV ───────────────────────────────────────────────────
+window.showPage = function(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name==='allKeys') loadAllKeys();
+  if (name==='manageUsers') loadUsers();
+}
+
+// ── ADMIN: CARGAR KEYS ────────────────────────────────────
+window.uploadKeys = async function() {
+  const raw   = document.getElementById('keyPasteArea').value;
+  const level = document.getElementById('pkLevel').value;
+  const dur   = document.getElementById('pkDur').value;
+  const st    = document.getElementById('pkStatus');
+  const keys  = raw.split('\n').map(k=>k.trim()).filter(Boolean);
+  if (!keys.length) { showMsg(st,'⚠ No pegaste ninguna key.','err'); return; }
+
+  let count = 0;
+  for (const k of keys) {
+    await push(ref(db,'stock'), { key:k, level, duration:dur, used:false, assignedTo:null });
+    count++;
+  }
+  document.getElementById('keyPasteArea').value='';
+  loadStats(); loadAllKeys();
+  showMsg(st, `✓ ${count} key(s) subidas al stock.`, 'ok');
+}
+
+// ── ADMIN: STATS ──────────────────────────────────────────
+async function loadStats() {
+  const [stockSnap, usersSnap] = await Promise.all([
+    get(ref(db,'stock')), get(ref(db,'users'))
+  ]);
+  const stock = stockSnap.val() || {};
+  const users = usersSnap.val() || {};
+  const keys  = Object.values(stock);
+  const avail = keys.filter(k=>!k.used);
+  document.getElementById('stTotal').textContent = avail.length;
+  document.getElementById('stLv2').textContent   = avail.filter(k=>k.level==='2').length;
+  document.getElementById('stLv3').textContent   = avail.filter(k=>k.level==='3').length;
+  document.getElementById('stUsers').textContent = Object.keys(users).length;
+}
+
+// ── ADMIN: STOCK TOTAL ────────────────────────────────────
+window.loadAllKeys = async function() {
+  const snap = await get(ref(db,'stock'));
+  const list = document.getElementById('allKeysList');
+  const data = snap.val() || {};
+  const entries = Object.entries(data);
+  document.getElementById('stockCount').textContent = entries.length;
+  if (!entries.length) { list.innerHTML='<li class="empty">Sin keys en stock.</li>'; return; }
+  list.innerHTML = entries.map(([id,k]) => `
+    <li class="key-item">
+      <span class="kb kb${k.level}">Lvl ${k.level}·${levelNames[k.level]}</span>
+      <span class="kb" style="background:var(--bg);color:var(--text3);border:0.5px solid var(--border);font-size:10px;">${k.duration}</span>
+      ${k.used ? `<span class="kb" style="background:rgba(248,113,113,.15);color:var(--danger);">Usada · ${k.assignedTo}</span>` : '<span class="kb" style="background:rgba(34,211,160,.1);color:var(--success);">Disponible</span>'}
+      <span class="kbt">${k.key}</span>
+      <button class="cpbtn" onclick="cpKey('${k.key}',this)">Copiar</button>
+      ${!k.used ? `<button class="cpbtn" style="color:var(--danger);border-color:rgba(248,113,113,.3);" onclick="deleteKey('${id}')">Borrar</button>` : ''}
+    </li>`).join('');
+}
+
+window.deleteKey = async function(id) {
+  if (!confirm('¿Borrar esta key del stock?')) return;
+  await remove(ref(db,'stock/'+id));
+  loadAllKeys(); loadStats();
+}
+
+// ── ADMIN: USUARIOS ───────────────────────────────────────
+window.createUser = async function() {
+  const u  = document.getElementById('newUsername').value.trim().toLowerCase();
+  const p  = document.getElementById('newPassword').value;
+  const r  = document.getElementById('newRole').value;
+  const st = document.getElementById('userStatus');
+  if (!u || !p) { showMsg(st,'⚠ Completa usuario y contraseña.','err'); return; }
+
+  const snap = await get(ref(db,'users/'+u));
+  if (snap.exists()) { showMsg(st,'⚠ Ese usuario ya existe.','err'); return; }
+
+  await set(ref(db,'users/'+u), { password:p, role:r, keysObtained:0 });
+  document.getElementById('newUsername').value='';
+  document.getElementById('newPassword').value='';
+  showMsg(st, `✓ Usuario "${u}" creado como ${r}.`, 'ok');
+  loadUsers(); loadStats();
+}
+
+async function loadUsers() {
+  const snap  = await get(ref(db,'users'));
+  const tbody = document.getElementById('userTable');
+  const data  = snap.val() || {};
+  const entries = Object.entries(data);
+  if (!entries.length) { tbody.innerHTML='<tr><td colspan="4" class="empty">Sin usuarios.</td></tr>'; return; }
+  tbody.innerHTML = entries.map(([u,d]) => `
+    <tr>
+      <td style="color:var(--text);font-family:var(--mono)">${u}</td>
+      <td><span class="tag-badge ${d.role==='admin'?'tag-admin':'tag-user'}">${d.role}</span></td>
+      <td style="color:var(--text2)">${d.keysObtained||0}</td>
+      <td>${u!=='admin'?`<button class="cpbtn" style="color:var(--danger);border-color:rgba(248,113,113,.3);" onclick="deleteUser('${u}')">Eliminar</button>`:'—'}</td>
+    </tr>`).join('');
+}
+
+window.deleteUser = async function(u) {
+  if (!confirm(`¿Eliminar al usuario "${u}"?`)) return;
+  await remove(ref(db,'users/'+u));
+  loadUsers(); loadStats();
+}
+
+// ── USER: OBTENER KEY ─────────────────────────────────────
+async function checkMyKey() {
+  const snap = await get(ref(db,'users/'+currentUser.username+'/assignedKey'));
+  if (snap.exists()) {
+    showMyKey(snap.val());
+  }
+}
+
+function showMyKey(keyData) {
+  document.getElementById('myKeyBox').style.display = 'block';
+  document.getElementById('requestKeyBox').style.display = 'none';
+  document.getElementById('myKeyVal').textContent  = keyData.key;
+  document.getElementById('myKeyMeta').textContent = `Nivel ${keyData.level} · ${levelNames[keyData.level]} · ${keyData.duration}`;
+}
+
+window.requestKey = async function() {
+  const level = document.getElementById('reqLevel').value;
+  const st    = document.getElementById('reqStatus');
+  const btn   = document.getElementById('reqBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Buscando...';
+
+  // Buscar key disponible del nivel pedido
+  const snap = await get(ref(db,'stock'));
+  const stock = snap.val() || {};
+  const match = Object.entries(stock).find(([id,k]) => k.level===level && !k.used);
+
+  if (!match) {
+    showMsg(st,'⚠ No hay keys disponibles de ese nivel. Contacta al admin.','err');
+    btn.disabled=false; btn.textContent='Obtener key'; return;
+  }
+
+  const [keyId, keyData] = match;
+
+  // Marcar como usada y asignar al usuario
+  await set(ref(db,'stock/'+keyId+'/used'), true);
+  await set(ref(db,'stock/'+keyId+'/assignedTo'), currentUser.username);
+
+  const assigned = { key:keyData.key, level:keyData.level, duration:keyData.duration, keyId };
+  await set(ref(db,'users/'+currentUser.username+'/assignedKey'), assigned);
+
+  // Sumar al contador
+  const countSnap = await get(ref(db,'users/'+currentUser.username+'/keysObtained'));
+  await set(ref(db,'users/'+currentUser.username+'/keysObtained'), (countSnap.val()||0)+1);
+
+  showMsg(st,'✓ Key asignada correctamente.','ok');
+  setTimeout(() => showMyKey(assigned), 800);
+  btn.disabled=false; btn.textContent='Obtener key';
+}
+
+window.copyMyKey = function() {
+  const key = document.getElementById('myKeyVal').textContent;
+  navigator.clipboard.writeText(key);
+  const btn = event.target;
+  btn.textContent='✓ Copiada';
+  setTimeout(()=>btn.textContent='Copiar key',1500);
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+window.cpKey = function(key, btn) {
+  navigator.clipboard.writeText(key).then(()=>{
+    btn.textContent='✓'; btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('ok');},1500);
+  });
+}
+
+function showMsg(el, msg, type) {
+  el.textContent=msg; el.className='smsg '+type;
+  setTimeout(()=>el.className='smsg',4000);
+}
+</script>
+</body>
+</html>
